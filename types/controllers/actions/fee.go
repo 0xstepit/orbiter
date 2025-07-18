@@ -18,17 +18,19 @@
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND
 // TITLE.
 
-package types
+package actions
 
-import "cosmossdk.io/errors"
-
-var (
-	ErrUnauthorized        = errors.Register(ModuleName, 1, "signer must be the authority")
-	ErrIdNotSupported      = errors.Register(ModuleName, 2, "id is not supported")
-	ErrNilPointer          = errors.Register(ModuleName, 3, "invalid nil pointer")
-	ErrControllerExecution = errors.Register(ModuleName, 4, "controller execution failed")
-	ErrInvalidAttributes   = errors.Register(ModuleName, 5, "invalid attributes")
-	ErrValidation          = errors.Register(ModuleName, 6, "validation failed")
-	ErrUnableToPause       = errors.Register(ModuleName, 7, "unable to pause")
-	ErrUnableToUnpause     = errors.Register(ModuleName, 8, "unable to unpause")
+import (
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+type RecipientAmount struct {
+	Recipient sdk.AccAddress
+	Amount    sdk.Coins
+}
+
+type FeesToDistribute struct {
+	Total  math.Int
+	Values []RecipientAmount
+}
