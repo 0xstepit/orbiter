@@ -36,7 +36,7 @@ import (
 	"orbiter.dev/types/interfaces"
 )
 
-var _ interfaces.ActionController = &FeeController{}
+var _ interfaces.ControllerAction = &FeeController{}
 
 // NewFeeController returns a new validated instance of
 // the fee controller.
@@ -49,7 +49,7 @@ func NewFeeController(
 	}
 
 	id := types.ACTION_FEE
-	baseController, err := controllers.NewBaseController[types.ActionID](id)
+	baseController, err := controllers.NewBaseController(id)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *FeeController) GetAttributes(action *types.Action) (*actions.FeeAttribu
 
 // extractAttributes extract the fee attributes. Return an error in case
 // of invalid attributes.
-func (f *FeeController) extractAttributes(
+func (c *FeeController) extractAttributes(
 	action *types.Action,
 ) (*actions.FeeAttributes, error) {
 	if action == nil {
