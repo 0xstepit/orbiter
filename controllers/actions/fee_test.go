@@ -304,15 +304,146 @@ func TestFeeController_ComputeFeesToDistribute(t *testing.T) {
 }
 
 func TestFeeController_ValidateAttributes(t *testing.T) {
+func TestValidateAttributesFeeController(t *testing.T) {
+	recipient := sdk.AccAddress(testutil.AddressBytes())
+
 	testCases := []struct {
 		name       string
 		attributes *actions.FeeAttributes
 		expErr     string
 	}{
 		{
-			name:       "fail - invalid attributes",
+			name:       "error - nil attributes",
 			attributes: nil,
 			expErr:     types.ErrNilPointer.Error(),
+		},
+		{
+			name: "success - empty fee info slice",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{},
+			},
+			expErr: "",
+		},
+		{
+			name: "success - valid single fee",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 100,
+					},
+				},
+			},
+			expErr: "",
+		},
+		{
+			name: "success - multiple valid fees",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 100,
+					},
+					{
+						Recipient:   sdk.AccAddress(testutil.AddressBytes()).String(),
+						BasisPoints: 200,
+					},
+				},
+			},
+			expErr: "",
+		},
+		{
+			name: "error - nil fee info in slice",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 100,
+					},
+					nil,
+				},
+			},
+			expErr: types.ErrNilPointer.Error(),
+		},
+		{
+			name: "error - zero basis points",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 0,
+					},
+				},
+			},
+			expErr: "cannot be zero",
+		},
+		{
+			name: "error - basis points over maximum",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: types.BPSNormalizer + 1,
+					},
+				},
+			},
+			expErr: "cannot be higher",
+		},
+		{
+			name: "error - empty recipient address",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   "",
+						BasisPoints: 100,
+					},
+				},
+			},
+			expErr: "empty address",
+		},
+		{
+			name: "error - invalid bech32 recipient",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   "invalid_address",
+						BasisPoints: 100,
+					},
+				},
+			},
+			expErr: "decoding bech32 failed",
+		},
+		{
+			name: "error - fails on first invalid fee in multiple fees",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 100,
+					},
+					{
+						Recipient:   "",
+						BasisPoints: 200,
+					},
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: 300,
+					},
+				},
+			},
+			expErr: "empty address",
+		},
+		{
+			name: "success - maximum basis points",
+			attributes: &actions.FeeAttributes{
+				FeesInfo: []*actions.FeeInfo{
+					{
+						Recipient:   recipient.String(),
+						BasisPoints: types.BPSNormalizer,
+					},
+				},
+			},
+			expErr: "",
 		},
 	}
 
