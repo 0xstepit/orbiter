@@ -79,7 +79,6 @@ func NewKeeper(
 	if _, err := sb.Build(); err != nil {
 		panic(err)
 	}
-
 	if err := k.Validate(); err != nil {
 		panic(err)
 	}
